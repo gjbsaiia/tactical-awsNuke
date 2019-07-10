@@ -4,8 +4,8 @@ import boto3
 import urllib3
 
 def main():
-    access_key = "AKIAIL6ZSUWIUVS6TY6A"
-    secret_key = "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"
+    access_key = ""
+    secret_key = ""
     # Instances tagged with the tags listed here that are set to a "1" will be destroyed
     target_tags = ["dispensible"]
     try:
@@ -23,8 +23,8 @@ def main():
     # updates nuke-config.yml
     filterByTag(client, target_tags)
     try:
-        #nuke_it(access_key, secret_key, sec_token) #call method to nuke account
-        print("this is where we would nuke")
+        nuke_it(access_key, secret_key) #call method to nuke account
+        #print("this is where we would nuke")
     except Exception as e:
         print("Error calling the nuke_it functions: {}".format(e))
         sys.exit(3)
@@ -43,7 +43,6 @@ def filterByTag(client, target_tags):
                 for each in target_tags:
                     if(tag["Key"] == each and tag["Value"] == '1'):
                         nukeThese.append(inst["InstanceId"])
-    print(nukeThese)
     base = ""
     with open(template, "r") as temp:
         base = temp.read()
