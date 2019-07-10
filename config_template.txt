@@ -1,0 +1,10 @@
+regions:
+- "global"
+- us-east-1
+- us-west-2
+- us-east-2
+- us-west-1
+account-blacklist:
+- 999999999999
+resource-types:
+  targets:

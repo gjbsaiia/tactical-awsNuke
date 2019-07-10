@@ -1,0 +1,18 @@
+regions:
+- "global"
+- us-east-1
+- us-west-2
+- us-east-2
+- us-west-1
+account-blacklist:
+- 999999999999
+resource-types:
+  targets:
+  - 7829317893
+  - 378947289
+  - 3290483290
+  - 38920489328940
+  - 38924043
+  - 83942083290
+accounts:
+  651384206601: {}
