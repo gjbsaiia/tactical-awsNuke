@@ -6,7 +6,6 @@ import urllib3
 def main():
     access_key = "AKIAIL6ZSUWIUVS6TY6A"
     secret_key = "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"
-
     # Instances tagged with the tags listed here that are set to a "1" will be destroyed
     target_tags = ["dispensible"]
     try:
@@ -36,7 +35,7 @@ def filterByTag(client, target_tags):
     template = "config_template.txt"
 
     nukeThese = []
-
+    # this is so gross... sorry
     all = client.describe_instances()
     for res in all["Reservations"]:
         for inst in res["Instances"]:
@@ -58,8 +57,8 @@ def filterByTag(client, target_tags):
         file.write("accounts:\n  070317122463: {}")
         file.close()
 
-def nuke_it(access_key,secret_key,sec_token):
-    osCmd = "aws-nuke --force --no-dry-run -c config/nuke-config.yml --access-key-id " + access_key +  " --secret-access-key " + secret_key + " --session-token " + sec_token
+def nuke_it(access_key,secret_key):
+    osCmd = "aws-nuke --force --no-dry-run -c config/nuke-config.yml --access-key-id " + access_key +  " --secret-access-key " + secret_key
     print (osCmd)
     response = os.system(osCmd)
 
