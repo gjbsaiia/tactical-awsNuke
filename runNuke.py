@@ -4,8 +4,8 @@ import boto3
 import urllib3
 
 def main():
-    access_key = "ACCESS_KEY"
-    secret_key = "SECRET_ACCESS_KEY"
+    access_key = "AKIAIL6ZSUWIUVS6TY6A"
+    secret_key = "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"
 
     # Instances tagged with the tags listed here that are set to a "1" will be destroyed
     target_tags = ["dispensible"]
@@ -36,19 +36,14 @@ def filterByTag(client, target_tags):
     template = "config_template.txt"
 
     nukeThese = []
-    filters = []
-    for each in target_tags:
-        filters.append({"Name": each, "Values": ["1"]})
-    print(filters)
 
-    list_instances = client.describe_instances()
-    print list_instances
-
-    instances = boto3.resource("ec2").instances.filter(
-        Filters=filters
-    )
-    for instance in instances:
-        nukeThese.append(instance.id)
+    all = client.describe_instances()
+    for res in all["Reservations"]:
+        for inst in res["Instances"]:
+            for tag in inst["Tags"]:
+                for each in target_tags:
+                    if(tag["Key"] == each and tag["Value"] == '1'):
+                        nukeThese.append(inst["InstanceId"])
     print(nukeThese)
     base = ""
     with open(template, "r") as temp:
@@ -60,7 +55,7 @@ def filterByTag(client, target_tags):
     with open(config, "a") as file:
         for each in nukeThese:
             file.write("  - "+each+"\n")
-        file.write("accounts:\n  YOUR_ACCOUNT_NUMBER: {}")
+        file.write("accounts:\n  070317122463: {}")
         file.close()
 
 def nuke_it(access_key,secret_key,sec_token):
