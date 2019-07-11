@@ -6,34 +6,33 @@ import urllib3
 def main():
     access_key = ""
     secret_key = ""
+    account_num = ""
+    region = ""
     # Instances tagged with the tags listed here that are set to a "1" will be destroyed
     target_tags = ["dispensible"]
     try:
         # creates boto3 session
-        client = boto3.client(
-            "ec2",
+        session = boto3.session.Session(
             aws_access_key_id = access_key,
             aws_secret_access_key = secret_key,
-            region_name = "us-east-1",
-            verify=False
+            region_name = region,
         )
     except Exception as e:
         print("Error creating AWS session: "+str(e))
         sys.exit(3)
-    # updates nuke-config.yml
-    filterByTag(client, target_tags)
-    try:
-        nuke_it(access_key, secret_key) #call method to nuke account
-        #print("this is where we would nuke")
-    except Exception as e:
-        print("Error calling the nuke_it functions: {}".format(e))
-        sys.exit(3)
+    client = session.client(
+        "ec2",
+        verify=False
+    )
+    killThese = filterByTag(client, target_tags)
+    ec2 = session.resource(
+        "ec2",
+        verify=False
+    )
+    kill(ec2, killThese)
 
 def filterByTag(client, target_tags):
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    config = "config/nuke-config.yml"
-    template = "config_template.txt"
-
     nukeThese = []
     # this is so gross... sorry
     all = client.describe_instances()
@@ -43,23 +42,15 @@ def filterByTag(client, target_tags):
                 for each in target_tags:
                     if(tag["Key"] == each and tag["Value"] == '1'):
                         nukeThese.append(inst["InstanceId"])
-    base = ""
-    with open(template, "r") as temp:
-        base = temp.read()
-        temp.close()
-    with open(config, "w") as file:
-        file.write(base+"\n")
-        file.close()
-    with open(config, "a") as file:
-        for each in nukeThese:
-            file.write("  - "+each+"\n")
-        file.write("accounts:\n  070317122463: {}")
-        file.close()
+    return nukeThese
 
-def nuke_it(access_key,secret_key):
-    osCmd = "aws-nuke --force --no-dry-run -c config/nuke-config.yml --access-key-id " + access_key +  " --secret-access-key " + secret_key
-    print (osCmd)
-    response = os.system(osCmd)
+def kill(ec2, instances):
+    print("Attempting killing all of these:")
+    print(instances)
+    try:
+        ec2.instances.filter(InstanceIds = instances).terminate()
+    except Exception as e:
+        print("Yikes, terminate function failed: "+e)
 
 if __name__ == '__main__':
     try:
