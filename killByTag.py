@@ -36,12 +36,13 @@ def filterByTag(client, target_tags):
     nukeThese = []
     # this is so gross... sorry
     all = client.describe_instances()
-    for res in all["Reservations"]:
-        for inst in res["Instances"]:
-            for tag in inst["Tags"]:
-                for each in target_tags:
-                    if(tag["Key"] == each and tag["Value"] == '1'):
-                        nukeThese.append(inst["InstanceId"])
+    for res in all.get("Reservations"):
+        for inst in res.get("Instances"):
+            if(inst.get("Tags")):
+                for tag in inst.get("Tags"):
+                    for each in target_tags:
+                        if(tag.get("Key") == each and tag.get("Value") == '1'):
+                            nukeThese.append(inst.get("InstanceId"))
     return nukeThese
 
 def kill(ec2, instances):
