@@ -13,10 +13,10 @@ groupTags = False
 
 def main():
     global groupTags
-    access_key = "AKIAIBHX65FJEYDUYH5A"
-    secret_key = "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"
-    account_num = "070317122463"
-    region = "us-west-2"
+access_key = ""
+secret_key = ""
+account_num = ""
+region = ""
     try:
         # creates boto3 session
         session = boto3.session.Session(
