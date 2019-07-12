@@ -3,16 +3,20 @@ import sys
 import boto3
 import urllib3
 
-# Instances tagged with these tags and values will be destroyed
+# Instances tagged with BOTH of these tags and values will be destroyed
 target_tags = {
     "dispensible": "1",
+    "Test": "Teeest"
 }
 
+groupTags = False
+
 def main():
-    access_key = ""
-    secret_key = ""
-    account_num = ""
-    region = ""
+    global groupTags
+    access_key = "AKIAIBHX65FJEYDUYH5A"
+    secret_key = "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"
+    account_num = "070317122463"
+    region = "us-west-2"
     try:
         # creates boto3 session
         session = boto3.session.Session(
@@ -27,27 +31,42 @@ def main():
         "ec2",
         verify=False
     )
-    killThese = filterByTag(client)
+    filter = buildFilter()
+    if(groupTags):
+        killThese = filterByTag(client,filter)
+    else:
+        killThese = segmentedFilterByTag(client, filter)
     ec2 = session.resource(
         "ec2",
         verify=False
     )
     kill(ec2, killThese)
 
-def filterByTag(client):
+def buildFilter():
     global target_tags
+    filter = []
+    for key, value in target_tags.items():
+        filter.append({'Name': 'tag:'+key, 'Values': [value]})
+    print(filter)
+    return filter
+
+def filterByTag(client,filter):
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     nukeThese = []
-    # this is so gross... sorry
-    all = client.describe_instances()
+    all = client.describe_instances(Filters=filter)
     for res in all.get("Reservations"):
         for inst in res.get("Instances"):
-            if(inst.get("Tags")):
-                for tag in inst.get("Tags"):
-                    for key, value in target_tags.items():
-                        if(tag.get("Key") == key and tag.get("Value") == value):
-                            nukeThese.append(inst.get("InstanceId"))
+            nukeThese.append(inst.get("InstanceId"))
     return nukeThese
+
+def segmentedFilterByTag(client,filter):
+    killThese = []
+    for each in filter:
+        killThese.extend(filterByTag(client,[each]))
+    killThese = list(dict.fromkeys(killThese))
+    print(killThese)
+    return killThese
+
 
 def kill(ec2, instances):
     print("Attempting killing all of these:")
